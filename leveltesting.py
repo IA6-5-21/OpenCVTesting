@@ -1,16 +1,27 @@
 import numpy as np
-from cv2 import cv2
+import cv2
 from matplotlib import pyplot as plt
+
+def find_parameters_for_canny_edge(image, sigma=0.23):
+        # compute the median of the single channel pixel intensities
+        median = np.median(image)
+        # find bounds for Canny edge detection using the computed median
+        lower = int(max(0, (1.0 - sigma) * median))
+        upper = int(min(255, (1.0 + sigma) * median))
+        print(lower,upper)
+        return lower, upper
 
 morph_dilate_kernel_size = (7, 7)
 morph_rect_kernel_size = (6, 1)
 
-
-img = cv2.imread('Image/95.jpg')
+img = cv2.imread("./images/90.jpg")
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+img = clahe.apply(img)
+canny_threshold_1, canny_threshold_2 = find_parameters_for_canny_edge(img)
 #img = cv2.blur(img, (3, 3))
 img = cv2.medianBlur(img, 15)
-edges = cv2.Canny(img, 49, 183)
+edges = cv2.Canny(img, canny_threshold_1,canny_threshold_2)
 
 h_edges = cv2.morphologyEx(edges, cv2.MORPH_DILATE, morph_dilate_kernel_size)
 horizontal_structure = cv2.getStructuringElement(
@@ -22,6 +33,9 @@ h_edges = cv2.morphologyEx(h_edges, cv2.MORPH_OPEN, horizontal_structure)
 
 # dst=h_edges
 
+
+
+
 def findLevelFromEdges(edgeImage):
     bottomIsDetected = False
     middleIsDetected = False
@@ -29,8 +43,10 @@ def findLevelFromEdges(edgeImage):
     hasBeenZero = False
     bottom, middle, top = 0, 0, 0
     heightOfImage = len(edgeImage)
+    MiddleOfImage = len(edgeImage[0])/2
+    print(MiddleOfImage)
     for i in range(0, heightOfImage):
-        if(edgeImage[i][320] == 255):
+        if(edgeImage[i][MiddleOfImage] == 255):
             if(topIsDetected == False):
                 top = heightOfImage-i
                 topIsDetected = True
@@ -50,7 +66,10 @@ def findLevelFromEdges(edgeImage):
     return round(levelPercent, 1)
 
 
-print(f"{findLevelFromEdges(h_edges)} %")
+try:
+    print(f"{findLevelFromEdges(h_edges)} %")
+except:
+    print("Error")
 plt.subplot(121), plt.imshow(edges, cmap='gray')
 plt.title('Original Image'), plt.xticks([]), plt.yticks([])
 plt.subplot(122), plt.imshow(h_edges, cmap='gray')
