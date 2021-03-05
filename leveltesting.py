@@ -32,20 +32,20 @@ def findLevelFromEdges(edgeImage):
     for i in range(0, heightOfImage):
         if(edgeImage[i][320] == 255):
             if(topIsDetected == False):
-                top = heightOfImage-i
+                top = i
                 topIsDetected = True
             elif(middleIsDetected == False and hasBeenZero == True):
-                middle = heightOfImage-i
+                middle = i
                 middleIsDetected = True
             elif(bottomIsDetected == False and hasBeenZero == True):
-                bottom = heightOfImage-i
+                bottom = i
                 bottomIsDetected = True
             hasBeenZero = False
         else:
             hasBeenZero = True
-    middle -= bottom
-    top -= bottom
-    levelPercent = (middle/top)*100
+    containerHeight=abs(top-bottom)
+    levelHeight=abs(middle-bottom)
+    levelPercent = (levelHeight/containerHeight)*100
     print(bottom, middle, top)
     return round(levelPercent, 1)
 
